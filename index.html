@@ -3,24 +3,341 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Juris · Legal information on WhatsApp</title>
+<title>Juris</title>
 <style>
-  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; background: #fff; margin: 0; padding: 16px; }
-  main { max-width: 760px; margin: 0 auto; padding-top: 40px; }
-  h1 { font-size: 2rem; }
-  nav a { margin-right: 12px; }
+  :root {
+    --bg: #f7f5f0;
+    --fg: #1d1f1c;
+    --muted: #5d625a;
+    --line: #dcd8cc;
+    --card: #ffffff;
+    --accent: #1f7a4d;
+    --accent-ink: #ffffff;
+    --chat-out: #d9f2dc;
+    --chat-in: #ffffff;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141613;
+      --fg: #eceee8;
+      --muted: #a2a89c;
+      --line: #2c302a;
+      --card: #1c1f1a;
+      --accent: #5fc487;
+      --accent-ink: #0d1a11;
+      --chat-out: #22402c;
+      --chat-in: #1f231e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141613;
+    --fg: #eceee8;
+    --muted: #a2a89c;
+    --line: #2c302a;
+    --card: #1c1f1a;
+    --accent: #5fc487;
+    --accent-ink: #0d1a11;
+    --chat-out: #22402c;
+    --chat-in: #1f231e;
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  main, header, footer { max-width: 880px; margin: 0 auto; }
+  section { padding-block: 48px; border-top: 1px solid var(--line); }
+  h1 { font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.1; text-wrap: balance; margin: 0 0 16px; }
+  h2 { font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1.2; text-wrap: balance; margin: 0 0 16px; }
+  h3 { font-size: 1.05rem; margin: 0 0 4px; }
+  p { margin: 0 0 12px; max-width: 65ch; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .muted { color: var(--muted); }
+  .label { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  nav.top { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; padding-block: 20px; }
+  nav.top .links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  nav.top a { color: var(--fg); text-decoration: none; font-size: 0.95rem; }
+  .brand { font-weight: 700; font-size: 1.2rem; color: var(--fg); text-decoration: none; }
+  .btn {
+    display: inline-block; background: var(--accent); color: var(--accent-ink);
+    padding: 12px 20px; border-radius: 999px; text-decoration: none; font-weight: 600;
+  }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .hero { padding-block: 48px 40px; display: grid; gap: 32px; grid-template-columns: 1fr; }
+  .hero .lede { font-size: 1.125rem; color: var(--muted); }
+  .hero .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .phone {
+    background: var(--card); border: 1px solid var(--line); border-radius: 24px;
+    padding: 16px; min-width: 0;
+  }
+  .phone .head { font-weight: 600; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 12px; }
+  .bubble { max-width: 88%; padding: 8px 12px; border-radius: 12px; margin: 8px 0; font-size: 0.95rem; }
+  .bubble.in { background: var(--chat-in); border: 1px solid var(--line); }
+  .bubble.out { background: var(--chat-out); margin-left: auto; }
+  .bubble small { display: block; color: var(--muted); font-size: 0.75rem; margin-top: 4px; }
+  .bubble.out { text-align: left; }
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 32px 0 0; }
+  .stats li { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .stats strong { display: block; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+  .steps { display: grid; gap: 16px; grid-template-columns: 1fr; padding: 0; list-style: none; margin: 0; }
+  .steps li { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .cases { display: grid; gap: 16px; grid-template-columns: 1fr; padding: 0; list-style: none; margin: 0; }
+  .cases li { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; }
+  .cases q { display: block; font-style: italic; margin-bottom: 4px; }
+  .plans { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  .plan { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; min-width: 0; }
+  .plan .price { font-size: 1.8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .plan ul { padding-left: 18px; margin: 12px 0 16px; }
+  .plan.featured { border-color: var(--accent); }
+  .note { font-size: 0.9rem; color: var(--muted); margin-top: 16px; max-width: 65ch; }
+  .lawyer-card { display: grid; gap: 20px; grid-template-columns: 1fr; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+  .facts { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+  .facts div { border-top: 1px solid var(--line); padding-top: 10px; min-width: 0; }
+  .facts dt { font-size: 0.85rem; color: var(--muted); }
+  .facts dd { margin: 0; font-weight: 600; }
+  .trust { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .trust li { padding-left: 0; }
+  .faq { display: grid; gap: 20px; }
+  .faq div { min-width: 0; }
+  .faq h3 { margin-bottom: 6px; }
+  details.legal { border-top: 1px solid var(--line); padding-block: 16px; }
+  details.legal summary { cursor: pointer; font-weight: 600; font-size: 1.05rem; }
+  details.legal ul { padding-left: 18px; }
+  footer { border-top: 1px solid var(--line); padding-block: 32px 48px; font-size: 0.9rem; color: var(--muted); }
+  footer .cols { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  footer a { color: var(--fg); }
+  @media (min-width: 720px) {
+    .hero { grid-template-columns: 1.1fr 0.9fr; align-items: center; }
+    .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .plans { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lawyer-card { grid-template-columns: 1.2fr 0.8fr; align-items: start; }
+    .faq { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    footer .cols { grid-template-columns: 2fr 1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 </head>
-<body>
+<body id="top">
+
+<header>
+  <nav class="top" aria-label="Main">
+    <a class="brand" href="#top">Juris</a>
+    <div class="links">
+      <a href="#how">How it works</a>
+      <a href="#plans">Pricing</a>
+      <a href="#lawyers">For lawyers</a>
+    </div>
+    <a class="btn ghost" href="https://wa.me/234XXXXXXXXXX">Open WhatsApp</a>
+  </nav>
+</header>
+
 <main>
-<h1>Juris</h1>
-<p>Juris is an AI legal information assistant on WhatsApp. It gives general information about Nigerian law and next steps. It is not a lawyer and does not replace legal advice.</p>
-<p>In danger? Call <strong>112</strong> now.</p>
-<nav>
-  <a href="privacy.html">Privacy Policy</a>
-  <a href="terms.html">Terms of Service</a>
-</nav>
-<p style="color:#555">Operated by POLICIQ LIMITED.</p>
+
+  <section class="hero" style="border-top:0">
+    <div>
+      <p class="label">AI legal assistant on WhatsApp</p>
+      <h1>Legal help, right inside WhatsApp.</h1>
+      <p class="lede">Tell Juris, our AI legal assistant, what happened. Type it or send a voice note, in English, Pidgin, Hausa, Yorùbá or Igbo. When you need a lawyer, a verified one calls you.</p>
+      <div class="actions">
+        <a class="btn" href="https://wa.me/234XXXXXXXXXX">Ask Juris</a>
+        <span class="muted">+234 [WhatsApp number]</span>
+      </div>
+    </div>
+
+    <div class="phone" role="img" aria-label="Sample WhatsApp conversation with Juris about a locked shop">
+      <div class="head">Juris <span class="muted" style="font-weight:400">· AI legal assistant</span></div>
+      <p class="label" style="text-align:center">Today</p>
+      <div class="bubble out">My landlord don lock my shop since morning. My goods dey inside. Na Ikeja.<small>9:40</small></div>
+      <div class="bubble in">Sorry, e no easy. For Lagos, landlord no fit lock you out or carry your goods without court order, even if rent never complete.<br><br>Do this now:<br>1. Snap the lock and the shop.<br>2. Write down the time and who lock am.<br>3. Ask for any notice wey dem serve you.<small>9:41</small></div>
+      <div class="bubble out">Abeg I fit talk to lawyer?<small>9:41</small></div>
+    </div>
+  </section>
+
+  <ul class="stats" aria-label="Key facts">
+    <li><strong>36 states + FCT</strong><span class="muted">Nationwide from day one</span></li>
+    <li><strong>5 languages</strong><span class="muted">English, Pidgin, Hausa, Yorùbá, Igbo</span></li>
+    <li><strong>5 free replies</strong><span class="muted">Then from ₦500, or plans from ₦2,500</span></li>
+    <li><strong>30 minutes</strong><span class="muted">For a lawyer to call you</span></li>
+  </ul>
+
+  <section id="how">
+    <h2>Nothing to download.</h2>
+    <p>If you can send a WhatsApp message, you can get legal help. No forms, no office visit, no waiting for an appointment.</p>
+    <ol class="steps">
+      <li><h3>1. Say hello</h3><p class="muted">Message our number. Juris replies at once, day or night, and asks you to agree to our terms.</p></li>
+      <li><h3>2. Explain what happened</h3><p class="muted">Type or record a voice note. Juris asks a question or two, then tells you your rights and what to do next.</p></li>
+      <li><h3>3. Talk to a lawyer</h3><p class="muted">Pay for 10 minutes by Paystack link. A verified lawyer reads your case summary and calls you on WhatsApp.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Ask what you'd ask a lawyer friend.</h2>
+    <p>During the pilot, Juris covers four areas in depth. For anything else, Juris connects you to a lawyer.</p>
+    <ul class="cases">
+      <li><q>My landlord gave me one week to pack out. Is that legal?</q><span class="muted">Rent and eviction</span></li>
+      <li><q>Police arrested my brother and they're asking for money for bail.</q><span class="muted">Police and your rights</span></li>
+      <li><q>My company hasn't paid me for three months.</q><span class="muted">Work and salary</span></li>
+      <li><q>A loan app is messaging everyone in my contacts.</q><span class="muted">Loan apps and debt</span></li>
+    </ul>
+    <p class="note">Juris asks which state you're in, because some laws differ from state to state.</p>
+  </section>
+
+  <section id="plans">
+    <h2>Pay as you go, or subscribe.</h2>
+    <p>Your first 5 replies are free. After that, top up when you need to, or take a plan if you'll be asking often.</p>
+    <div class="plans">
+      <article class="plan">
+        <h3>Credit</h3>
+        <p class="price">₦500</p>
+        <p class="muted">for 15 replies, or ₦1,000 for 35</p>
+        <ul>
+          <li>Credit never expires</li>
+          <li>Voice replies, 2 credits each</li>
+          <li>Type VOICE OFF to save credit</li>
+        </ul>
+        <a class="btn ghost" href="https://wa.me/234XXXXXXXXXX">Buy credit</a>
+      </article>
+      <article class="plan">
+        <h3>Juris Monthly</h3>
+        <p class="price">₦2,500 <span class="muted" style="font-size:1rem;font-weight:400">a month</span></p>
+        <p class="muted">or ₦25,000 a year</p>
+        <ul>
+          <li>100 replies every month</li>
+          <li>Voice replies included</li>
+          <li>Renew or stop any time</li>
+        </ul>
+        <a class="btn ghost" href="https://paystack.com/pay/juris-monthly">Subscribe</a>
+      </article>
+      <article class="plan featured">
+        <h3>Juris Plus</h3>
+        <p class="price">₦6,000 <span class="muted" style="font-size:1rem;font-weight:400">a month</span></p>
+        <p class="muted">or ₦60,000 a year</p>
+        <ul>
+          <li>300 replies every month</li>
+          <li>Voice replies included</li>
+          <li>Lawyer calls you within 15 minutes</li>
+          <li>10% off lawyer calls: ₦8,100</li>
+        </ul>
+        <a class="btn" href="https://paystack.com/pay/juris-plus">Subscribe</a>
+      </article>
+    </div>
+    <p class="note">Plan replies reset every month and don't roll over. Yearly plans give the same monthly replies for 12 months. Credit you've bought is used after your plan replies run out. Type BALANCE in the chat to see what you have left. Safety steps for danger or arrest are always free.</p>
+  </section>
+
+  <section id="lawyers">
+    <h2>A real lawyer on the line in 30 minutes.</h2>
+    <p>Every lawyer you reach through Juris is called to the Nigerian Bar, and we check their enrolment before they take a single case. One price, whoever you get.</p>
+    <div class="lawyer-card">
+      <div>
+        <p class="label">Lawyer call</p>
+        <p style="font-size:1.6rem;font-weight:700;margin:0 0 12px">₦9,000 for 10 minutes with a lawyer</p>
+        <p class="muted">In danger right now? Call <strong style="color:var(--fg)">112</strong> first.</p>
+        <a class="btn" href="https://wa.me/234XXXXXXXXXX">Get a lawyer</a>
+      </div>
+      <dl class="facts">
+        <div><dt>Payment</dt><dd>Paystack link</dd></div>
+        <div><dt>Call hours</dt><dd>8am – 8pm, daily</dd></div>
+        <div><dt>Minutes valid for</dt><dd>7 days</dd></div>
+        <div><dt>No call within 2 hours</dt><dd>Full refund</dd></div>
+      </dl>
+    </div>
+
+    <div style="margin-top:32px">
+      <h3>Are you a lawyer?</h3>
+      <p class="muted">Take paid consultations from clients across Nigeria, from your phone, on your own schedule. Every case arrives with a clear summary.</p>
+      <p><code>lawyers@[domain]</code></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Juris is an AI, and always says so.</h2>
+    <p>Juris gives general legal information and practical next steps. When your case needs legal advice, Juris hands you to a lawyer.</p>
+    <ul class="trust">
+      <li><strong>Private by default.</strong> Your chats are used only to help you.</li>
+      <li><strong>Shared only when you ask.</strong> Only the lawyer handling your case sees your number.</li>
+      <li><strong>Never sold.</strong> We don't sell or rent your data to anyone.</li>
+      <li><strong>No sensitive details.</strong> We will never ask for your BVN, NIN, card number or PIN.</li>
+    </ul>
+  </section>
+
+  <section id="faq">
+    <h2>Questions</h2>
+    <div class="faq">
+      <div>
+        <h3>Does it cost anything to talk to Juris?</h3>
+        <p class="muted">Your first 5 replies from Juris are free. After that, buy Juris credit by Paystack link (₦500 for 15 replies or ₦1,000 for 35), or subscribe: Juris Monthly is ₦2,500 a month or ₦25,000 a year for 100 replies a month, and Juris Plus is ₦6,000 a month or ₦60,000 a year for 300 replies a month with faster, cheaper lawyer calls. A lawyer is paid separately, at ₦9,000 for 10 minutes. If you're in danger or someone is detained right now, Juris gives you the safety steps whether you have credit or not.</p>
+      </div>
+      <div>
+        <h3>Which languages can I use?</h3>
+        <p class="muted">English, Pidgin, Hausa, Yorùbá and Igbo. Choose one when you start, or just write or speak in your language and Juris follows. Type LANGUAGE any time to switch.</p>
+      </div>
+      <div>
+        <h3>Can Juris go to court or the police station for me?</h3>
+        <p class="muted">No. Juris gives information and next steps. If you need someone to write, call or appear for you, a verified lawyer can take that on.</p>
+      </div>
+      <div>
+        <h3>Is my conversation private?</h3>
+        <p class="muted">Yes. Your chat stays between you and Juris. A lawyer sees your case only after you ask for one.</p>
+      </div>
+      <div>
+        <h3>Which states do you cover?</h3>
+        <p class="muted">All 36 states and the FCT. Juris asks your state because some laws, like tenancy laws, differ from state to state.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="legal">
+    <h2>Terms and privacy</h2>
+    <details class="legal" id="terms">
+      <summary>Terms of use</summary>
+      <p class="muted">Summary. Full terms will be published before launch.</p>
+      <ul>
+        <li>Juris is an AI system that provides general legal information, not legal advice. No lawyer–client relationship is created with Juris.</li>
+        <li>Lawyer consultations are provided by independent lawyers called to the Nigerian Bar, who are responsible for the advice they give.</li>
+        <li>Juris credit and lawyer minutes are prepaid. Lawyer minutes stay valid for 7 days. You get a full refund if no lawyer calls within 2 hours of payment.</li>
+        <li>Juris is not an emergency service. In an emergency, call 112.</li>
+        <li>Do not use the service to harass anyone or for any unlawful purpose.</li>
+      </ul>
+    </details>
+    <details class="legal" id="privacy">
+      <summary>Privacy notice</summary>
+      <p class="muted">Summary. The full policy will be published before launch.</p>
+      <ul>
+        <li>We collect your phone number, your messages and voice notes, and payment confirmations from Paystack. We never see your card details.</li>
+        <li>We use them to answer you, to connect you to a lawyer, and to improve the service.</li>
+        <li>We process your data under the Nigeria Data Protection Act 2023. To see or delete your data, email privacy@[domain].</li>
+        <li>Our technology providers process messages on our behalf under contract.</li>
+      </ul>
+    </details>
+  </section>
+
 </main>
+
+<footer>
+  <div class="cols">
+    <div>
+      <p style="color:var(--fg);font-weight:600;margin:0">My Lawyer Technologies Ltd</p>
+      <p style="margin:4px 0 0">RC [number]<br>[Registered address]</p>
+    </div>
+    <div>
+      <p style="margin:0 0 4px" class="label">Contact</p>
+      <p style="margin:0">hello@[domain]<br>lawyers@[domain]</p>
+    </div>
+    <div>
+      <p style="margin:0 0 4px" class="label">Legal</p>
+      <p style="margin:0"><a href="#terms">Terms of use</a><br><a href="#privacy">Privacy notice</a></p>
+    </div>
+  </div>
+  <p style="margin-top:24px">© 2026 My Lawyer Technologies Ltd. Juris provides legal information, not legal advice.</p>
+</footer>
+
 </body>
 </html>
